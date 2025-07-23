@@ -1,10 +1,10 @@
-const ClothingItem = require("../models/clothingItem.js");
+const ClothingItem = require("../models/clothingItem");
 const { handleError } = require("../utils/errors");
 
 module.exports.likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } }, 
+    { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .orFail()
