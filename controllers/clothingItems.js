@@ -9,9 +9,7 @@ const {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((item) => res.status(200).send(item))
-    .catch((err) => {
-      return handleGenericError(err, res);
-    });
+    .catch((err) => handleGenericError(err, res));
 };
 
 const createItem = (req, res) => {
