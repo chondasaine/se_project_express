@@ -1,5 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
-const { handleError } = require("../utils/errors");
+const {
+  handleCastError,
+  handleNotFoundError,
+  handleGenericError,
+} = require("../utils/errors");
 
 module.exports.likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
@@ -9,7 +13,12 @@ module.exports.likeItem = (req, res) => {
   )
     .orFail()
     .then((item) => res.status(200).send(item))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError")
+        return handleNotFoundError(err, res);
+      if (err.name === "CastError") return handleCastError(err, res);
+      return handleGenericError(err, res);
+    });
 };
 
 module.exports.unlikeItem = (req, res) => {
@@ -20,5 +29,10 @@ module.exports.unlikeItem = (req, res) => {
   )
     .orFail()
     .then((item) => res.status(200).send(item))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError")
+        return handleNotFoundError(err, res);
+      if (err.name === "CastError") return handleCastError(err, res);
+      return handleGenericError(err, res);
+    });
 };

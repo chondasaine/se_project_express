@@ -1,10 +1,17 @@
 const ClothingItem = require("../models/clothingItem");
-const { handleError } = require("../utils/errors");
+const {
+  handleValidationError,
+  handleCastError,
+  handleNotFoundError,
+  handleGenericError,
+} = require("../utils/errors");
 
-const getItem = (req, res) => {
+const getItems = (req, res) => {
   ClothingItem.find({})
     .then((item) => res.status(200).send(item))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      return handleGenericError(err, res);
+    });
 };
 
 const createItem = (req, res) => {
@@ -13,7 +20,12 @@ const createItem = (req, res) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send({ data: item }))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === "ValidationError")
+        return handleValidationError(err, res);
+      if (err.name === "CastError") return handleCastError(err, res);
+      return handleGenericError(err, res);
+    });
 };
 
 const deleteItem = (req, res) => {
@@ -22,7 +34,12 @@ const deleteItem = (req, res) => {
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then((item) => res.status(200).send(item))
-    .catch((err) => handleError(err, res));
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError")
+        return handleNotFoundError(err, res);
+      if (err.name === "CastError") return handleCastError(err, res);
+      return handleGenericError(err, res);
+    });
 };
 
-module.exports = { getItem, createItem, deleteItem };
+module.exports = { getItems, createItem, deleteItem };
