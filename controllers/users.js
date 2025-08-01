@@ -30,7 +30,11 @@ const createUser = (req, res) => {
     .then((hash) => {
       return User.create({ name, avatar, email, password: hash });
     })
-    .then((user) => res.status(201).send(user))
+    .then((user) => {
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(201).send(userData);
+    })
     .catch((err) => {
       if (err.name === "ValidationError")
         return handleValidationError(err, res);
@@ -40,8 +44,8 @@ const createUser = (req, res) => {
     });
 };
 
-const getUserById = (req, res) => {
-  const { userId } = req.params;
+const getCurrentUser = (req, res) => {
+  const { userId } = req.user;
 
   User.findById(userId)
     .orFail()
@@ -56,19 +60,21 @@ const getUserById = (req, res) => {
 
 const loginByCredential = (req, res) => {
   const { email, password } = req.body;
+  let currentUser;
 
   User.findUserByCredentials({ email, password })
     .then((user) => {
       if (!user) {
         return handleAuthError(null, res);
       }
+      currentUser = user;
       return bcrypt.compare(password, user.password);
     })
     .then((matched) => {
       if (!matched) {
         return handleAuthError(null, res);
       }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+      const token = jwt.sign({ _id: currentUseruser._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
@@ -78,4 +84,38 @@ const loginByCredential = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUserById, loginByCredential };
+const updateProfile = (req, res) => {
+  const userId = req.user._id;
+  const { name, avatar } = req.body;
+
+  if (!name && !avatar) {
+    return handleValidationError(
+      new Error("Name or Avatar must be provided"),
+      res
+    );
+  }
+  const updateObj = {
+    ...(name ? { name } : {}),
+    ...(avatar ? { avatar } : {}),
+  };
+  User.findByIdAndUpdate(userId, updateObj, {
+    new: true,
+    runValidators: true,
+  })
+    .orFail()
+    .then((updatedUser) => res.status(200).send({ data: updatedUser }))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return handleValidationError(err, res);
+      }
+      return handleNotFoundError(err, res);
+    });
+};
+
+module.exports = {
+  getUsers,
+  createUser,
+  getCurrentUser,
+  loginByCredential,
+  updateProfile,
+};

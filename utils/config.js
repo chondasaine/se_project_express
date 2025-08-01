@@ -1,2 +1,2 @@
-const JWT_SECRET = secretKey;
+const JWT_SECRET = "secret_key";
 module.exports = { JWT_SECRET };

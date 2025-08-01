@@ -1,8 +1,9 @@
 const BAD_REQUEST_STATUS_CODE = 400;
-const ITEM_NOT_FOUND_STATUS_CODE = 404;
-const INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
-const SERVER_CANNOT_COMPLETE_REQUEST = 409;
 const UNAUTHORIZED = 401;
+const ITEM_NOT_FOUND_STATUS_CODE = 404;
+const FORBIDDEN = 403;
+const SERVER_CANNOT_COMPLETE_REQUEST = 409;
+const INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
 
 function handleValidationError(err, res) {
   console.error("ValidationError:", err);
@@ -40,6 +41,18 @@ function handleAuthError(err, res) {
     .send({ message: "Incorrect email or password" });
 }
 
+function handleAuthRequiredError(err, res) {
+  console.error("AuthRequiredError", err);
+  return res.status(UNAUTHORIZED).send({ message: "Authorization Required" });
+}
+
+function handleForbiddenError(err, res) {
+  console.error("Forbidden", err);
+  return res
+    .status(FORBIDDEN)
+    .send({ message: "Not authorized to perform action" });
+}
+
 module.exports = {
   handleValidationError,
   handleCastError,
@@ -47,6 +60,8 @@ module.exports = {
   handleGenericError,
   handleHTTPConflictError,
   handleAuthError,
+  handleAuthRequiredError,
+  handleForbiddenError,
   ITEM_NOT_FOUND_STATUS_CODE,
   UNAUTHORIZED,
 };
