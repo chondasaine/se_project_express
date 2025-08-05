@@ -62,6 +62,7 @@ module.exports = {
   handleAuthError,
   handleAuthRequiredError,
   handleForbiddenError,
+  BAD_REQUEST_STATUS_CODE,
   ITEM_NOT_FOUND_STATUS_CODE,
   UNAUTHORIZED,
 };

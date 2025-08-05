@@ -1,8 +1,8 @@
 const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 const indexRouter = require("./routes/index");
 const { createUser, loginByCredential } = require("./controllers/users");
-const app = express();
 const { PORT = 3001 } = process.env;
 const cors = require("cors");
 
@@ -13,10 +13,11 @@ mongoose
   })
   .catch(console.error);
 
+app.use(express.json());
+
 app.post("/signin", loginByCredential);
 app.post("/signup", createUser);
 
-app.use(express.json());
 app.use("/", indexRouter);
 
 app.use(cors());

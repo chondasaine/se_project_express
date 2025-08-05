@@ -29,15 +29,9 @@ const userSchema = new mongoose.Schema({
       validator(email) {
         const options = {
           allow_display_name: false,
-          require_display_name: false,
           allow_utf8_local_part: true,
           require_tld: true,
           allow_ip_domain: false,
-          allow_underscores: false,
-          domain_specific_validation: true,
-          blacklisted_chars: "!#$%",
-          host_blacklist: ["spamdomain.com"],
-          host_whitelist: ["trusteddomain.com"],
         };
 
         return validator.isEmail(email, options);

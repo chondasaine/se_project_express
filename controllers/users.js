@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/config");
 const {
   handleValidationError,
   handleCastError,
@@ -8,9 +9,9 @@ const {
   handleGenericError,
   handleHTTPConflictError,
   handleAuthError,
+  BAD_REQUEST_STATUS_CODE,
   UNAUTHORIZED,
 } = require("../utils/errors");
-//const {JWT_SECRET} = require('../utils/config');
 
 const getUsers = (req, res) => {
   User.find({})
@@ -24,7 +25,6 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
@@ -36,11 +36,13 @@ const createUser = (req, res) => {
       res.status(201).send(userData);
     })
     .catch((err) => {
-      if (err.name === "ValidationError")
+      if (err.name === "ValidationError") {
         return handleValidationError(err, res);
+      }
       if (err.code === 11000) return handleHTTPConflictError(err, res);
-
-      return handleGenericError(err, res);
+      {
+        return handleGenericError(err, res);
+      }
     });
 };
 
@@ -58,30 +60,36 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const loginByCredential = (req, res) => {
+const loginByCredential = async (req, res) => {
   const { email, password } = req.body;
-  let currentUser;
 
-  User.findUserByCredentials({ email, password })
-    .then((user) => {
-      if (!user) {
-        return handleAuthError(null, res);
-      }
-      currentUser = user;
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return handleAuthError(null, res);
-      }
-      const token = jwt.sign({ _id: currentUseruser._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.send({ token });
-    })
-    .catch((err) => {
-      res.status(UNAUTHORIZED).send({ message: err.message });
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST_STATUS_CODE)
+      .send({ message: "Email and password are required" });
+  }
+
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    if (!user) {
+      return handleAuthError(null, res);
+    }
+
+    const matched = await bcrypt.compare(password, user.password);
+    console.log("Password match result:", matched);
+    if (!matched) {
+      return handleAuthError(null, res);
+    }
+    console.log("JWT_SECRET value:", JWT_SECRET);
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
+    console.log("Login successful, sending token:", token);
+    res.send({ token });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(UNAUTHORIZED).send({ message: err.message });
+  }
 };
 
 const updateProfile = (req, res) => {
