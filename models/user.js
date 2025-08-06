@@ -52,10 +52,11 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   password
 ) {
   return this.findOne({ email })
-    .select("+password")
+    .select("+password -__v")
     .then((user) => {
+      console.log("User found in DB:", user);
       if (!user) {
-        return handleValidationError(new Error("Incorrect email or password"));
+        throw new Error("Incorrect email or password");
       }
       return user;
     });

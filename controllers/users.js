@@ -25,8 +25,16 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-  bcrypt
-    .hash(req.body.password, 10)
+
+  User.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
+        const conflictError = new Error("Email already exists");
+        conflictError.code = 11000;
+        throw conflictError;
+      }
+      return bcrypt.hash(req.body.password, 10);
+    })
     .then((hash) => {
       return User.create({ name, avatar, email, password: hash });
     })
@@ -36,20 +44,20 @@ const createUser = (req, res) => {
       res.status(201).send(userData);
     })
     .catch((err) => {
+      if (err.code === 11000) {
+        return handleHTTPConflictError(err, res);
+      }
       if (err.name === "ValidationError") {
         return handleValidationError(err, res);
       }
-      if (err.code === 11000) return handleHTTPConflictError(err, res);
-      {
-        return handleGenericError(err, res);
-      }
+      return handleGenericError(err, res);
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user;
-
-  User.findById(userId)
+  const { _id } = req.user;
+  console.log(req.user);
+  User.findOne({ _id })
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -61,6 +69,7 @@ const getCurrentUser = (req, res) => {
 };
 
 const loginByCredential = async (req, res) => {
+  console.log("Login route hit with body:", req.body);
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -71,6 +80,7 @@ const loginByCredential = async (req, res) => {
 
   try {
     const user = await User.findUserByCredentials(email, password);
+    console.log("User after credential check:", user);
     if (!user) {
       return handleAuthError(null, res);
     }
