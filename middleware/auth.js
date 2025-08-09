@@ -1,6 +1,5 @@
-const { handleAuthRequiredError } = require("../utils/errors");
-const { JWT_SECRET } = require("../utils/config");
 const jwt = require("jsonwebtoken");
+const { handleAuthRequiredError } = require("../utils/errors");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -21,5 +20,5 @@ module.exports = (req, res, next) => {
     return handleAuthRequiredError(err, res);
   }
   req.user = payload;
-  next();
+  return next();
 };

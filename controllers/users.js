@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { JWT_SECRET } = require("../utils/config");
+
 const {
   handleValidationError,
   handleCastError,
@@ -13,18 +13,8 @@ const {
   UNAUTHORIZED,
 } = require("../utils/errors");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      if (err.name === "ValidationError")
-        return handleValidationError(err, res);
-      return handleGenericError(err, res);
-    });
-};
-
 const createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
+  const { name, avatar, email } = req.body;
 
   User.findOne({ email })
     .then((existingUser) => {
@@ -35,9 +25,7 @@ const createUser = (req, res) => {
       }
       return bcrypt.hash(req.body.password, 10);
     })
-    .then((hash) => {
-      return User.create({ name, avatar, email, password: hash });
-    })
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       const userData = user.toObject();
       delete userData.password;
@@ -56,7 +44,7 @@ const createUser = (req, res) => {
 
 const getCurrentUser = (req, res) => {
   const { _id } = req.user;
-  console.log(req.user);
+
   User.findOne({ _id })
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -69,7 +57,6 @@ const getCurrentUser = (req, res) => {
 };
 
 const loginByCredential = async (req, res) => {
-  console.log("Login route hit with body:", req.body);
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -80,32 +67,30 @@ const loginByCredential = async (req, res) => {
 
   try {
     const user = await User.findUserByCredentials(email, password);
-    console.log("User after credential check:", user);
+
     if (!user) {
       return handleAuthError(null, res);
     }
 
     const matched = await bcrypt.compare(password, user.password);
-    console.log("Password match result:", matched);
+
     if (!matched) {
       return handleAuthError(null, res);
     }
-    console.log("JWT_SECRET value:", JWT_SECRET);
+
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-    console.log("Login successful, sending token:", token);
-    res.send({ token });
+
+    return res.send({ token });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(UNAUTHORIZED).send({ message: err.message });
+    return res.status(UNAUTHORIZED).send({ message: err.message });
   }
 };
 
 const updateProfile = (req, res) => {
   const userId = req.user._id;
   const { name, avatar } = req.body;
-
   if (!name && !avatar) {
     return handleValidationError(
       new Error("Name or Avatar must be provided"),
@@ -116,22 +101,36 @@ const updateProfile = (req, res) => {
     ...(name ? { name } : {}),
     ...(avatar ? { avatar } : {}),
   };
-  User.findByIdAndUpdate(userId, updateObj, {
+  return User.findByIdAndUpdate(userId, updateObj, {
     new: true,
     runValidators: true,
   })
-    .orFail()
-    .then((updatedUser) => res.status(200).send({ data: updatedUser }))
+    .orFail(() => {
+      const error = new Error("UserNotFound");
+      error.name = "DocumentNotFoundError";
+      throw error;
+    })
+    .then((updatedUser) => {
+      if (!updatedUser) {
+        throw new Error("UserNotFound");
+      }
+      const userData = updatedUser.toObject();
+      delete userData.password;
+
+      return res.status(200).send({ data: updatedUser.name });
+    })
     .catch((err) => {
       if (err.name === "ValidationError") {
         return handleValidationError(err, res);
       }
-      return handleNotFoundError(err, res);
+
+      if (err.name === "DocumentNotFoundError") {
+        return handleNotFoundError(err, res);
+      }
+      return handleGenericError(err, res);
     });
 };
-
 module.exports = {
-  getUsers,
   createUser,
   getCurrentUser,
   loginByCredential,

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const { handleValidationError } = require("../utils/errors");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -48,13 +47,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.statics.findUserByCredentials = function findUserByCredentials(
-  email,
-  password
+  email
 ) {
   return this.findOne({ email })
     .select("+password -__v")
     .then((user) => {
-      console.log("User found in DB:", user);
       if (!user) {
         throw new Error("Incorrect email or password");
       }
