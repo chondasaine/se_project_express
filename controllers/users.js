@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/config");
 
 const {
   handleValidationError,
@@ -47,7 +48,15 @@ const getCurrentUser = (req, res) => {
 
   User.findOne({ _id })
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(200).send({
+        name: userData.name,
+        avatar: userData.avatar,
+        email: userData.email,
+      });
+    })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError")
         return handleNotFoundError(err, res);
@@ -78,7 +87,7 @@ const loginByCredential = async (req, res) => {
       return handleAuthError(null, res);
     }
 
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
       expiresIn: "7d",
     });
 
@@ -117,7 +126,11 @@ const updateProfile = (req, res) => {
       const userData = updatedUser.toObject();
       delete userData.password;
 
-      return res.status(200).send({ data: updatedUser.name });
+      return res.status(200).send({
+        name: updatedUser.name,
+        avatar: updatedUser.avatar,
+        email: updatedUser.email,
+      });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {

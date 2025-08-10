@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { handleAuthRequiredError } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -12,13 +13,18 @@ module.exports = (req, res, next) => {
   }
 
   const token = authorization.replace("Bearer ", "");
-  let payload;
+  if (!token) {
+    return handleAuthRequiredError(
+      new Error("Token is missing in the authorization header"),
+      res
+    );
+  }
 
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
+    return next();
   } catch (err) {
     return handleAuthRequiredError(err, res);
   }
-  req.user = payload;
-  return next();
 };

@@ -6,10 +6,11 @@ const likeRouter = require("./likes");
 const { ITEM_NOT_FOUND_STATUS_CODE } = require("../utils/errors");
 const auth = require("../middleware/auth");
 
-router.use(auth);
-router.use("/users", userRouter);
 router.use("/items", itemRouter);
 router.use("/items", likeRouter);
+
+router.use(auth);
+router.use("/users", userRouter);
 
 router.use("*", (req, res) => {
   res
