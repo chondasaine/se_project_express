@@ -16,7 +16,11 @@ const {
 
 const createUser = (req, res) => {
   const { name, avatar, email } = req.body;
-
+  if (req.body.password.length < 8) {
+    return res
+      .status(BAD_REQUEST_STATUS_CODE)
+      .send({ message: "Password must be at least 8 characters long" });
+  }
   User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {

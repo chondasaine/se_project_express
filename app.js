@@ -23,7 +23,6 @@ app.use(cors());
 
 app.post("/signin", loginByCredential);
 app.post("/signup", createUser);
-app.post("/login", loginByCredential);
 
 app.use("/", indexRouter);
 
