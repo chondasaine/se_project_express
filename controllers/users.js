@@ -15,6 +15,7 @@ const {
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
+  console.log("Incoming signup payload:", req.body);
   const { name, avatar, email } = req.body;
   if (req.body.password.length < 8) {
     return res
@@ -37,6 +38,7 @@ const createUser = (req, res) => {
       res.status(201).send(userData);
     })
     .catch((err) => {
+      console.error("Signup error:", err);
       if (err.code === 11000) {
         return handleHTTPConflictError(err, res);
       }
