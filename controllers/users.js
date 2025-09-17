@@ -35,7 +35,12 @@ const createUser = (req, res) => {
     .then((user) => {
       const userData = user.toObject();
       delete userData.password;
-      res.status(201).send(userData);
+      res.status(201).send({
+        _id: userData._id,
+        name: userData.name,
+        avatar: userData.avatar,
+        email: userData.email,
+      });
     })
     .catch((err) => {
       console.error("Signup error:", err);
@@ -58,6 +63,7 @@ const getCurrentUser = (req, res) => {
       const userData = user.toObject();
       delete userData.password;
       res.status(200).send({
+        _id: userData._id,
         name: userData.name,
         avatar: userData.avatar,
         email: userData.email,
@@ -133,6 +139,7 @@ const updateProfile = (req, res) => {
       delete userData.password;
 
       return res.status(200).send({
+        _id: userData._id,
         name: updatedUser.name,
         avatar: updatedUser.avatar,
         email: updatedUser.email,
