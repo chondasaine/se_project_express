@@ -15,7 +15,6 @@ const {
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
-  console.log("Incoming signup payload:", req.body);
   const { name, avatar, email } = req.body;
   if (req.body.password.length < 8) {
     return res
@@ -60,14 +59,8 @@ const getCurrentUser = (req, res) => {
   User.findOne({ _id })
     .orFail()
     .then((user) => {
-      const userData = user.toObject();
-      delete userData.password;
-      res.status(200).send({
-        _id: userData._id,
-        name: userData.name,
-        avatar: userData.avatar,
-        email: userData.email,
-      });
+      const { password, ...userData } = user.toObject();
+      res.status(200).send(userData);
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError")

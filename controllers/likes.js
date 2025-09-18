@@ -12,7 +12,9 @@ module.exports.likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+      res.status(200).send(item);
+    })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError")
         return handleNotFoundError(err, res);
