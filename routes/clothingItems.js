@@ -5,11 +5,12 @@ const {
   deleteItem,
 } = require("../controllers/clothingItems");
 const auth = require("../middleware/auth");
+const { validateItemBody, validateId } = require("../middleware/validation.js");
 
 router.get("/", getItems);
 
 router.use(auth);
-router.post("/", createItem);
-router.delete("/:itemId", deleteItem);
+router.post("/", validateItemBody, createItem);
+router.delete("/:itemId", validateId, deleteItem);
 
 module.exports = router;
