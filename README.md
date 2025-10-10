@@ -34,7 +34,14 @@ Whether you're facing wind, snow, or blazing sunshine—WTWR equips you with the
 
 ---
 
-## 📸 Screenshots
+## 🌐 Live Demo
+
+Access the deployed frontend here: [https://wtwr.h4ck.me](https://wtwr.h4ck.me)
+Access the deployed frontend here: [https://www.wtwr.h4ck.me](https://www.wtwr.h4ck.me)
+
+## Frontend Github Repo
+
+[GitHub](https://github.com/chondasaine/SE_PROJECT_REACT.git)
 
 ### 🗂️ Express Folder Structure
 
@@ -59,6 +66,11 @@ Whether you're facing wind, snow, or blazing sunshine—WTWR equips you with the
 > End-to-end route testing with Postman to confirm functionality, validation, and error handling.
 
 ---
+
+## Project Pitch Video
+
+Check out [ProjectPitch-WTWR](https://drive.google.com/file/d/1PlHNfSLvBtQ9aPNLkZoDP9chlxhLkOuO/view?usp=sharing), where I describe my
+project and some challenges I faced while building it.
 
 ## 🚀 Getting Started
 
