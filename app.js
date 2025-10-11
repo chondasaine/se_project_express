@@ -15,7 +15,7 @@ const { createUser, loginByCredential } = require("./controllers/users");
 
 const { PORT = 3001 } = process.env;
 
-const { errorHandler } = require("./middleware/error-handler");
+const errorHandler = require("./middleware/error-handler");
 
 const { requestLogger, errorLogger } = require("./middleware/logger");
 
