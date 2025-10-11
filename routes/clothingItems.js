@@ -5,7 +5,7 @@ const {
   deleteItem,
 } = require("../controllers/clothingItems");
 const auth = require("../middleware/auth");
-const { validateItemBody, validateId } = require("../middleware/validation.js");
+const { validateItemBody, validateId } = require("../middleware/validation");
 
 router.get("/", getItems);
 

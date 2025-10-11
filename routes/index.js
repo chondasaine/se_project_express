@@ -3,7 +3,7 @@ const router = require("express").Router();
 const userRouter = require("./users");
 const itemRouter = require("./clothingItems");
 const likeRouter = require("./likes");
-const { ITEM_NOT_FOUND_STATUS_CODE } = require("../utils/errors");
+const { NotFoundError } = require("../middleware/errors/NotFoundError");
 const auth = require("../middleware/auth");
 
 router.use("/items", itemRouter);
@@ -12,10 +12,8 @@ router.use("/items", likeRouter);
 router.use(auth);
 router.use("/users", userRouter);
 
-router.use("*", (req, res) => {
-  res
-    .status(ITEM_NOT_FOUND_STATUS_CODE)
-    .json({ message: "Requested resource not found" });
+router.use("*", (req, res, next) => {
+  next(new NotFoundError("Requested route does not exist"));
 });
 
 module.exports = router;
